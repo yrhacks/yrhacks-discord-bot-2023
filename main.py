@@ -1,8 +1,8 @@
 import os
+from dotenv import load_dotenv
 import discord
 
-# Constants
-VERIFIED_ROLE_NAME = "verified"
+load_dotenv()
 
 # Temporary array of allowed users. Should get these from the google sheet in the future.
 temp_allowed_users = [
@@ -33,7 +33,7 @@ async def on_message(message):
 @client.event
 async def on_member_join(member):
 	guild = member.guild
-	verified_role = discord.utils.get(guild.roles, name=VERIFIED_ROLE_NAME)
+	verified_role = discord.utils.get(guild.roles, name=os.getenv('VERIFIED_ROLE_NAME'))
 	
 	if guild.system_channel is not None:
 		if f'{member.name}#{member.discriminator}' in temp_allowed_users:
@@ -49,4 +49,5 @@ async def on_member_join(member):
 			
 	await guild.system_channel.send(to_send)
 
-client.run(os.getenv('TOKEN'))
+print(os.getenv('DISCORD_TOKEN'))
+client.run(os.getenv('DISCORD_TOKEN'))
