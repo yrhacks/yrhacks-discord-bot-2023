@@ -1,53 +1,72 @@
 import os
 from dotenv import load_dotenv
 import discord
+from discord.ext import commands
+import sched
+import time
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 load_dotenv()
 
-# Temporary array of allowed users. Should get these from the google sheet in the future.
-temp_allowed_users = [
-	"EdZ123#8965",
-	"RZ Music#5601"
-]
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+TOKEN_FILE = 'token.json'
+CREDENTIALS_FILE = 'credentials.json'
 
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 client = discord.Client(intents=intents)
+creds = None
+approved_users = []
+
+# Authenticate Google Sheets API
+# The file token.json stores the user's access and refresh tokens, and is
+# created automatically when the authorization flow completes for the first
+# time.
+if os.path.exists(TOKEN_FILE):
+    creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+# If there are no (valid) credentials available, let the user log in.
+if not creds or not creds.valid:
+    if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+    else:
+        flow = InstalledAppFlow.from_client_secrets_file(
+            CREDENTIALS_FILE, SCOPES)
+        creds = flow.run_local_server(port=0)
+    # Save the credentials for the next run
+    with open(TOKEN_FILE, 'w') as token:
+        token.write(creds.to_json())
+
+
+def get_approved_users():
+    """Updates list of approved users from the spreadsheet"""
+
+    try:
+        service = build('sheets', 'v4', credentials=creds)
+
+        # Call the Sheets API
+        sheet = service.spreadsheets()
+        result = sheet.values().get(spreadsheetId=os.getenv('SPREADSHEET_ID'),
+                                    range=os.getenv('SPREADSHEET_RANGE')).execute()
+        values = result.get('values', [])
+        approved_users = [value[0] for value in values]
+        print(approved_users)
+    except HttpError as err:
+        print(err)
+
+
+# Fetch new approved users every 60 seconds
+approved_users_sched = sched.scheduler(time.time, time.sleep)
+approved_users_sched.enter(60, 1, get_approved_users)
+approved_users_sched.run()
 
 
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
 
-
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
-
-# Verify new members
-@client.event
-async def on_member_join(member):
-	guild = member.guild
-	verified_role = discord.utils.get(guild.roles, name=os.getenv('VERIFIED_ROLE_NAME'))
-	
-	if guild.system_channel is not None:
-		if f'{member.name}#{member.discriminator}' in temp_allowed_users:
-			try:
-				await member.add_roles(verified_role)
-			except Exception as e:
-				print(e)
-				to_send = "Error assigning roles."
-			else:
-				to_send = f'Welcome {member.mention} to {guild.name}, you have been verified!'
-		else:
-			to_send = f'Hello {member.mention}, your username and tag are not in our allowed list. If you changed your username or tag after registering, please email us.'
-			
-	await guild.system_channel.send(to_send)
-
-print(os.getenv('DISCORD_TOKEN'))
 client.run(os.getenv('DISCORD_TOKEN'))
