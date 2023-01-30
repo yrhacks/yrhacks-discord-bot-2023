@@ -2,24 +2,25 @@ import os
 from dotenv import load_dotenv
 import discord
 from discord.ext import commands
-import sched
-import time
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+import threading
 
 load_dotenv()
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 TOKEN_FILE = 'token.json'
 CREDENTIALS_FILE = 'credentials.json'
+UPDATE_INTERVAL = 60
+WELCOME_MESSAGE = 'Welcome to YRHacks! Please verify your identity by clicking the button below.'
 
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
-client = discord.Client(intents=intents)
+bot = commands.Bot(command_prefix='!', intents=intents)
 creds = None
 approved_users = []
 
@@ -43,8 +44,9 @@ if not creds or not creds.valid:
 
 
 def get_approved_users():
-    """Updates list of approved users from the spreadsheet"""
-
+    """Updates list of approved users from the spreadsheet on an interval"""
+    global approved_users
+    threading.Timer(UPDATE_INTERVAL, get_approved_users).start()
     try:
         service = build('sheets', 'v4', credentials=creds)
 
@@ -54,19 +56,39 @@ def get_approved_users():
                                     range=os.getenv('SPREADSHEET_RANGE')).execute()
         values = result.get('values', [])
         approved_users = [value[0] for value in values]
-        print(approved_users)
     except HttpError as err:
         print(err)
 
 
-# Fetch new approved users every 60 seconds
-approved_users_sched = sched.scheduler(time.time, time.sleep)
-approved_users_sched.enter(60, 1, get_approved_users)
-approved_users_sched.run()
+get_approved_users()
 
 
-@client.event
+class Buttons(discord.ui.View):
+    # Verification button
+    @discord.ui.button(label="Verify", style=discord.ButtonStyle.green)
+    async def verify_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        server = interaction.guild
+        verified_role = discord.utils.get(
+            server.roles, name=os.getenv('VERIFIED_ROLE_NAME'))
+
+        if f'{interaction.user.name}#{interaction.user.discriminator}' in approved_users:
+            # Add role to user
+            await interaction.user.add_roles(verified_role)
+            await interaction.response.send_message("Congrats, you are verified!", ephemeral=True)
+        else:
+            await interaction.response.send_message("Sorry, we didn't recognize your username or tag. If you changed any one of them since your registration, please email us at yrhacks@gapps.yrdsb.ca.", ephemeral=True)
+
+
+@bot.event
 async def on_ready():
-    print(f'We have logged in as {client.user}')
+    print(f'We have logged in as {bot.user}')
 
-client.run(os.getenv('DISCORD_TOKEN'))
+
+@bot.event
+async def on_guild_join(guild):
+    # Send welcome message and verification button
+    if guild.system_channel is not None:
+        view = Buttons()
+        await guild.system_channel.send(WELCOME_MESSAGE, view=view)
+
+bot.run(os.getenv('DISCORD_TOKEN'))
