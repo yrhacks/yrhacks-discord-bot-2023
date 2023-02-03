@@ -68,6 +68,14 @@ class APIs(commands.Cog):
 
         return draft
 
+    def send_draft(self, draft):
+        """Send a gmail draft"""
+
+        try:
+            self.gmail_service.users().drafts().send(userId="me", body=draft).execute()
+        except HttpError as error:
+            print(F'An error occurred: {error}')
+
 
 async def setup(bot):
     await bot.add_cog(APIs(bot))
