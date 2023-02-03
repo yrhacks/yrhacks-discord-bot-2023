@@ -2,18 +2,10 @@ import os
 from dotenv import load_dotenv
 import discord
 from discord.ext import tasks, commands
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 
 load_dotenv()
 
 # Constants
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-TOKEN_FILE = 'token.json'
-CREDENTIALS_FILE = 'credentials.json'
 UPDATE_INTERVAL = 60
 
 WELCOME_MESSAGE = 'Welcome to YRHacks! Please verify your identity by clicking the button below.'
@@ -46,46 +38,18 @@ class Verification(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.approved_users = []
-        self.auth_google_api()
         self.update_users.start()
 
     def cog_unload(self):
         self.update_users.cancel()
 
-    def auth_google_api(self):
-        """Authenticate Google Sheets API"""
-
-        creds = None
-        # The file token.json stores the user's access and refresh tokens, and is
-        # created automatically when the authorization flow completes for the first
-        # time.
-        if os.path.exists('token.json'):
-            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-        # If there are no (valid) credentials available, let the user log in.
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    'credentials.json', SCOPES)
-                creds = flow.run_local_server(port=0)
-            # Save the credentials for the next run
-            with open('token.json', 'w') as token:
-                token.write(creds.to_json())
-        self.service = build('sheets', 'v4', credentials=creds)
-
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def update_users(self):
         """Updates list of approved users from the spreadsheet"""
 
-        try:
-            # Call the Sheets API
-            result = self.service.spreadsheets().values().get(spreadsheetId=os.getenv('SPREADSHEET_ID'),
-                                                              range=os.getenv('SPREADSHEET_DISCORD_RANGE')).execute()
-            values = result.get('values', [])
-            self.approved_users = [value[0] for value in values]
-        except HttpError as err:
-            print(err)
+        values = self.bot.get_cog('APIs').get_spreadsheet_data(
+            os.getenv('SPREADSHEET_ID'), os.getenv('SPREADSHEET_DISCORD_RANGE'))
+        self.approved_users = [value[0] for value in values]
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
