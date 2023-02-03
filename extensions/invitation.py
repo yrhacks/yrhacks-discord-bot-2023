@@ -2,7 +2,6 @@ import os
 from dotenv import load_dotenv
 from discord.ext import commands
 import base64
-from email.message import EmailMessage
 from email.mime.text import MIMEText
 
 load_dotenv()
@@ -55,7 +54,12 @@ class Invitation(commands.Cog):
         draft = self.bot.get_cog('APIs').create_draft(create_message)
         self.drafts.append(draft)
 
+    def is_owner(self, ctx):
+        """Check if the user is the owner"""
+        return ctx.author.id == self.bot.owner_id
+
     @commands.command()
+    @commands.has_permissions(administrator=True)
     async def create_drafts(self, ctx):
         """Create drafts for all members"""
 
@@ -70,6 +74,7 @@ class Invitation(commands.Cog):
         await ctx.send(f"{len(emails)} drafts created.")
 
     @commands.command()
+    @commands.has_permissions(administrator=True)
     async def send_drafts(self, ctx):
         """Send all drafts to their respective members"""
 
