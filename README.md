@@ -6,9 +6,9 @@ Discord bot for verification of members and mentor requests. Approved users are 
 
 ### Google Sheets
 
-- Create a Google Sheet with the Discord usernames and tags of registered students
-- Create a Google Cloud service account with the Google Sheets API
-- Generate an API key and save the JSON as `credentials.json` in the project directory
+- Create a Google Sheet linked to registration form, should have the Discord usernames + tags and emails of registered students
+- Go to the YRHacks Discord Bot app in yrhacks@gapps.yrdsb.ca's Google Cloud
+- Save the Auth 2.0 Client ID as `credentials.json` in the project directory
 
 ### Running Locally
 
