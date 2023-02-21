@@ -17,6 +17,7 @@ class APIs(commands.Cog):
     """Cog for interacting with Google APIs"""
 
     def __init__(self, bot):
+        self.bot = bot
         self.build_services(SCOPES)
 
     def build_services(self, scopes):
