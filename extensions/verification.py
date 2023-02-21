@@ -49,7 +49,7 @@ class Verification(commands.Cog):
         self.bot = bot
 
     async def setup_hook(self) -> None:
-        self.add_view(VerificationView())
+        self.bot.add_view(VerificationView())
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
