@@ -28,7 +28,10 @@ class RequestView(discord.ui.View):
         Please use this channel to discuss your questions and concerns.
         """))
 
+        button.style = discord.ButtonStyle.grey
         button.disabled = True
+        button.label = "Accepted"
+        await interaction.response.edit_message(view=self)
 
 
 class RequestModal(discord.ui.Modal, title="Mentor Request"):
