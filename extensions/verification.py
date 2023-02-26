@@ -28,7 +28,6 @@ class VerificationView(discord.ui.View):
 
     @discord.ui.button(label="Verify", style=discord.ButtonStyle.green, custom_id='verify')
     async def verify(self, interaction: discord.Interaction, button: discord.ui.Button):
-        print(self.approved_)
         server = interaction.guild
         verified_role = discord.utils.get(
             server.roles, name=os.getenv('VERIFIED_ROLE_NAME'))
