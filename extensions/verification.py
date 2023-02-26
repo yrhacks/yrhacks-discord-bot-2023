@@ -1,13 +1,11 @@
 import os
 from dotenv import load_dotenv
 import discord
-from discord.ext import tasks, commands
+from discord.ext import commands
 
 load_dotenv()
 
 # Constants
-UPDATE_INTERVAL = 60
-
 WELCOME_MESSAGE = 'Welcome to YRHacks! Please verify your identity by clicking the button below.'
 VERIFIED_MESSAGE = "Congrats, you are verified!"
 UNVERIFIED_MESSAGE = "Sorry, we didn't recognize your username or tag. If you changed any one of them since your registration, please email us at yrhacks@gapps.yrdsb.ca."
@@ -18,7 +16,6 @@ class VerificationView(discord.ui.View):
         super().__init__(timeout=None)
         self.update_users.start()
 
-    @tasks.loop(seconds=UPDATE_INTERVAL)
     async def update_users(self):
         """Updates list of approved users from the spreadsheet"""
 
@@ -28,6 +25,8 @@ class VerificationView(discord.ui.View):
 
     @discord.ui.button(label="Verify", style=discord.ButtonStyle.green, custom_id='verify')
     async def verify(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.update_users()
+
         server = interaction.guild
         verified_role = discord.utils.get(
             server.roles, name=os.getenv('VERIFIED_ROLE_NAME'))
