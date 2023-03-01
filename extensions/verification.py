@@ -98,8 +98,8 @@ class Verification(commands.Cog):
     async def on_guild_join(self, guild):
         """Send welcome message and verification button"""
 
-        if guild.system_channel is not None:
-            await guild.system_channel.send(WELCOME_MESSAGE, view=VerificationView())
+        if guild.rules_channel is not None:
+            await guild.rules_channel.send(WELCOME_MESSAGE, view=VerificationView())
 
 
 async def setup(bot):
