@@ -69,7 +69,6 @@ class VerificationView(discord.ui.View):
         values = self.get_spreadsheet_data(
             os.getenv('SPREADSHEET_ID'), os.getenv('SPREADSHEET_DISCORD_RANGE'))
         self.approved_users = [value[0] for value in values]
-        print(self.approved_users)
 
     @discord.ui.button(label="Verify", style=discord.ButtonStyle.green, custom_id='verify')
     async def verify(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -101,10 +100,6 @@ class Verification(commands.Cog):
 
         if guild.system_channel is not None:
             await guild.system_channel.send(WELCOME_MESSAGE, view=VerificationView())
-
-    @commands.command()
-    async def test(self, ctx):
-        await self.on_guild_join(ctx.guild)
 
 
 async def setup(bot):
