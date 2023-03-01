@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import asyncio
+from googleapiclient.errors import HttpError
 
 load_dotenv()
 discord.utils.setup_logging()
