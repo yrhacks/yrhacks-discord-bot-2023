@@ -24,6 +24,7 @@ class RequestView(discord.ui.View):
             int(os.getenv('MENTORING_CATEGORY_ID')))
 
         overwrites = {
+            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
             interaction.user: discord.PermissionOverwrite(read_messages=True),
             self.requester: discord.PermissionOverwrite(read_messages=True)
         }
