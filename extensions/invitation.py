@@ -149,9 +149,8 @@ class Invitation(commands.Cog):
         """Send all drafts to their respective members"""
 
         # Send drafts
-        apis_cog = self.bot.get_cog('APIs')
         for draft in self.drafts:
-            apis_cog.send_draft(draft)
+            self.send_draft(draft)
 
         # Send confirmation message
         await ctx.send(f"{len(self.drafts)} emails sent.")

@@ -104,7 +104,10 @@ class Verification(commands.Cog):
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def add_join_button(self, ctx):
-        await self.on_guild_join(ctx.guild)
+        """Send welcome message and verification button"""
+
+        if ctx.guild.rules_channel is not None:
+            await ctx.guild.rules_channel.send(WELCOME_MESSAGE, view=VerificationView())
 
 
 async def setup(bot):
