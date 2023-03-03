@@ -9,16 +9,18 @@ from googleapiclient.errors import HttpError
 load_dotenv()
 discord.utils.setup_logging()
 
-GUILD = discord.Object(id=int(os.getenv('GUILD_ID')))
-
 
 class MyBot(commands.Bot):
     def __init__(self, *, command_prefix, intents: discord.Intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
+        self.synced_commands = False
 
     async def setup_hook(self):
-        self.tree.copy_global_to(guild=GUILD)
-        await self.tree.sync(guild=GUILD)
+        if not self.synced_commands:
+            guild = discord.Object(id=int(os.getenv('GUILD_ID')))
+            self.tree.copy_global_to(guild=guild)
+            await self.tree.sync(guild=guild)
+            self.synced_commands = True
 
 
 intents = discord.Intents.default()

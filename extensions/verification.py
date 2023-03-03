@@ -91,8 +91,9 @@ class Verification(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def setup_hook(self) -> None:
-        self.bot.add_view(VerificationView())
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.bot.add_view(view=VerificationView())
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
@@ -106,8 +107,7 @@ class Verification(commands.Cog):
     async def add_join_button(self, ctx):
         """Send welcome message and verification button"""
 
-        if ctx.guild.rules_channel is not None:
-            await ctx.guild.rules_channel.send(WELCOME_MESSAGE, view=VerificationView())
+        await self.on_guild_join(ctx.guild)
 
 
 async def setup(bot):

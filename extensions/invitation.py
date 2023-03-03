@@ -20,7 +20,7 @@ MESSAGE = """<html>
     You are receiving this email because you registered for YRHacks 2023! Below is the invitation for the YRHacks Discord server. Please click the link below to join the server.
     <br><br> 
     This is a one-time use link. Do not share the link with anyone else.<br> 
-    If you did not register for YRHacks 2023, please ignore this email.<br> 
+    If you did not register for YRHacks 2023 or have already joined the server, please ignore this email.<br> 
     <br>
     Join: <a href={link}>{link}</a><br> 
     <br> 

@@ -43,6 +43,10 @@ class RequestView(discord.ui.View):
 
 
 class RequestModal(discord.ui.Modal, title="Mentor Request"):
+    def __init__(self, bot):
+        super().__init__(timeout=None, custom_id='request_modal')
+        self.bot = bot
+
     subject_input = discord.ui.TextInput(
         style=discord.TextStyle.short,
         label="Brief subject of interest",
@@ -57,8 +61,12 @@ class RequestModal(discord.ui.Modal, title="Mentor Request"):
         Request from {interaction.user.mention}
         Subject: {self.subject_input.value}
         """
-        await requests_channel.send(textwrap.dedent(request_string), view=RequestView(interaction.user, self.subject_input.value))
+        view = RequestView(interaction.user, self.subject_input.value)
+        message = await requests_channel.send(textwrap.dedent(request_string), view=view)
         await requests_channel.send("--------------------")
+
+        # Make view persistent
+        self.bot.add_view(view=view, message_id=message.id)
 
         await interaction.response.send_message('Your request has been submitted! You will be pinged when a mentor accepts it.', ephemeral=True)
 
@@ -74,14 +82,11 @@ class Mentoring(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    async def setup_hook(self) -> None:
-        self.bot.add_view(RequestView())
-
     @app_commands.command()
     async def request_mentor(self, interaction: discord.Interaction):
         """Opens a mentor request form"""
 
-        request_modal = RequestModal()
+        request_modal = RequestModal(self.bot)
         await interaction.response.send_modal(request_modal)
 
 
