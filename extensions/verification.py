@@ -101,6 +101,11 @@ class Verification(commands.Cog):
         if guild.rules_channel is not None:
             await guild.rules_channel.send(WELCOME_MESSAGE, view=VerificationView())
 
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def add_join_button(self, ctx):
+        await self.on_guild_join(ctx.guild)
+
 
 async def setup(bot):
     await bot.add_cog(Verification(bot))
