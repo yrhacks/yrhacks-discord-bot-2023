@@ -16,9 +16,16 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly',
           'https://www.googleapis.com/auth/gmail.compose']
 MESSAGE = """<html>
   <body>
-    <p>Hi! Please click the link below to join the YRHacks Discord server.</p>
-
-    <a href={link}>{link}</a>
+    <p>Hello there,<br>
+    You are receiving this email because you registered for YRHacks 2023! Below is the invitation for the YRHacks Discord server. Please click the link below to join the server.
+    <br><br> 
+    This is a one-time use link. Do not share the link with anyone else.<br> 
+    If you did not register for YRHacks 2023, please ignore this email.<br> 
+    <br>
+    Join: <a href={link}>{link}</a><br> 
+    <br> 
+    See you at YRHacks 2023!<br> 
+    The YRHacks Team</p>
   </body>
 </html>"""
 FROM = "yrhacks@gapps.yrdsb.ca"
