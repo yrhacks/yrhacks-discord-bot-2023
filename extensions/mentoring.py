@@ -1,6 +1,7 @@
 import os
 import discord
 from discord.ext import commands
+from discord.utils import get
 from dotenv import load_dotenv
 from discord import app_commands
 import traceback
@@ -18,10 +19,16 @@ class RequestView(discord.ui.View):
     @discord.ui.button(label="Accept", style=discord.ButtonStyle.green, custom_id='accept')
     async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
         channel_name = f"{interaction.user.name} - {self.requester.name} - {self.request_subject}"
+
         mentoring_category = interaction.guild.get_channel(
             int(os.getenv('MENTORING_CATEGORY_ID')))
+
+        overwrites = {
+            interaction.user: discord.PermissionOverwrite(read_messages=True),
+            self.requester: discord.PermissionOverwrite(read_messages=True)
+        }
         channel = await interaction.guild.create_text_channel(
-            name=channel_name, category=mentoring_category)
+            name=channel_name, category=mentoring_category, overwrites=overwrites)
 
         await channel.send(textwrap.dedent(f"""
         Hello, {self.requester.mention}! {interaction.user.mention} has accepted your request for help concerning {self.request_subject}!
