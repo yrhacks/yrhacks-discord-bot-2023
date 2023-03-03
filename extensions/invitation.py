@@ -135,7 +135,11 @@ class Invitation(commands.Cog):
 
         values = self.get_spreadsheet_data(
             os.getenv('SPREADSHEET_ID'), os.getenv('SPREADSHEET_EMAIL_RANGE'))
-        emails = [value[0] for value in values]
+
+        emails = []
+        for value in values:
+            if len(value) > 0:
+                emails.append(value[0])
 
         for email in emails:
             await self.create_draft(ctx, email)
